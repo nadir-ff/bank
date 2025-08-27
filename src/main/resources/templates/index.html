@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>A Bank</title>
+</head>
+<body style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+<h1>Loan Eligibility Checker</h1>
+<form id="loanForm">
+  <label for="creditRating">Credit Rating:</label>
+  <select id="creditRating" name="creditRating" required>
+    <option value="A">A</option>
+    <option value="B">B</option>
+    <option value="C">C</option>
+    <option value="D">D</option>
+  </select>
+  <br><br>
+
+  <label for="income">Income:</label>
+  <input type="number" id="income" name="income" required>
+  <br><br>
+
+  <label for="dateOfBirth">Date of Birth:</label>
+  <input type="date" id="dateOfBirth" name="dateOfBirth" required>
+  <br><br>
+
+  <label for="existingDebt">Existing Debt (optional):</label>
+  <input type="number" id="existingDebt" name="existingDebt">
+  <br><br>
+
+  <button type="submit">Check Eligibility</button>
+</form>
+
+<h2 id="result"></h2>
+
+<script>
+    document.getElementById('loanForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const creditRating = document.getElementById('creditRating').value;
+        const income = parseInt(document.getElementById('income').value, 10);
+        const dateInput = document.getElementById('dateOfBirth').value;
+        const debtInput = document.getElementById('existingDebt').value;
+        const existingDebt = debtInput === "" ? null : parseInt(debtInput, 10);
+
+
+        const dateOfBirth = dateInput ? new Date(dateInput).toISOString() : null;
+
+        const payload = {
+            creditRating,
+            income,
+            dateOfBirth,
+            existingDebt
+        };
+
+        try {
+            const response = await fetch('/loans', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                document.getElementById('result').innerText = `Error: ${err.message || response.statusText}`;
+                return;
+            }
+
+            const result = await response.json();
+            document.getElementById('result').innerText = `You are eligible for €${result.amount}`;
+        } catch (error) {
+            document.getElementById('result').innerText = `Error: ${error.message}`;
+        }
+    });
+</script>
+</body>
+</html>
